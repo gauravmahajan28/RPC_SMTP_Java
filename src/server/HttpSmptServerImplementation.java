@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -15,6 +16,8 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.FlagTerm;
+import javax.mail.Flags.Flag;
 
 
 public class HttpSmptServerImplementation implements HttpSmptServer {
@@ -83,15 +86,28 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 
 		    
 		      Folder emailFolder = store.getFolder("INBOX");
-		      emailFolder.open(Folder.READ_ONLY);
+		      emailFolder.open(Folder.READ_WRITE);
 		      RPCResponse rpcResponse = null; 	
 		      int found = 0;
 		      while(true)
 		      {
-		    	  Message[] messages = emailFolder.getMessages();
+		    	   store = emailSession.getStore("imaps");
+
+			      store.connect( this.serverEmail, this.serverPassword);
+			      emailFolder = store.getFolder("INBOX");
+			      emailFolder.open(Folder.READ_WRITE);
+
+		    	  Message messages[] = emailFolder.search(new FlagTerm(new Flags(Flag.SEEN), false));	
+		    	  //  Message[] messages = emailFolder.getMessages();
 		    	  System.out.println("messages.length---" + messages.length);
 		    	  int x = messages.length;
-            
+                  if(x == 0)
+                  {
+                	  TimeUnit.SECONDS.sleep(1);
+                	  emailFolder.close(false);
+        		      store.close();
+                	  continue;
+                  }
 		    	  for (int i = 0, n = 1; i < n; i++) 
 		    	  {
 		    		  Message message = messages[--x];
@@ -101,7 +117,7 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		        
 		    		  if(message.getSubject().contains("RPC_QUERY"))
 		    		  {
-	
+		    			  emailFolder.setFlags(messages, new Flags(Flags.Flag.SEEN), true);
 		    			  RPCRequest rpcRequest = parseRPCRequest(text);
 		    			  if(rpcRequest.getFunctionName().equals("ADD"))
 		    			  {

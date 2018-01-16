@@ -4,7 +4,9 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.mail.*;
+import javax.mail.Flags.Flag;
 import javax.mail.internet.*;
+import javax.mail.search.FlagTerm;
 import javax.activation.*;
 
 import server.RPCRequest;
@@ -143,14 +145,21 @@ public class HttpSmptClientImplementation implements HttpSmptClient
 
 		    
 		      Folder emailFolder = store.getFolder("INBOX");
-		      emailFolder.open(Folder.READ_ONLY);
+		      emailFolder.open(Folder.READ_WRITE);
 		      RPCResponse rpcResponse = null; 	
 		      int found = 0;
 		      while(true)
 		      {
-		    	  Message[] messages = emailFolder.getMessages();
+		    	  Message messages[] = emailFolder.search(new FlagTerm(new Flags(Flag.SEEN), false));	
 		    	//  System.out.println("messages.length---" + messages.length);
 		    	  int x = messages.length;
+		    	  if(x == 0)
+                  {
+                	  TimeUnit.SECONDS.sleep(1);
+                	  emailFolder.close(false);
+        		      store.close();
+                	  continue;
+                  }
             
 		    	  for (int i = 0, n = 1; i < n; i++) 
 		    	  {
@@ -161,6 +170,7 @@ public class HttpSmptClientImplementation implements HttpSmptClient
 		        
 		    		  if(message.getSubject().contains("Response"))
 		    		  {
+		    			  emailFolder.setFlags(messages, new Flags(Flags.Flag.SEEN), true);
 		    			  	System.out.println("got result as :" + text);
 		    			  	found = 1;
 		    		  }
