@@ -19,8 +19,4 @@ public class RPCRequest {
 	public void setArguments(ArrayList<String> arguments) {
 		this.arguments = arguments;
 	}
-	
-	
-	
-
 }

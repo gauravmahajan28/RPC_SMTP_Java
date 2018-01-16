@@ -1,10 +1,12 @@
 package server;
 
+import java.util.ArrayList;
+
 public interface HttpSmptServer {
 	
 	public void readProperties() throws Exception;
 	
-	public int add(int a, int b) throws Exception;
+	public int add(ArrayList<String> arguments) throws Exception;
 	
 	public RPCResponse listenForRPCEmail() throws Exception;
 	

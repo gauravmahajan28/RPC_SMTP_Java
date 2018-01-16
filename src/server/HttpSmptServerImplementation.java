@@ -22,6 +22,9 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 	String serverEmail;
 	String serverPassword;
 	
+	/**
+	 * read properties file containing gmail usernames and password and initialize class variables
+	 */
 	public void readProperties() throws Exception
 	{
 		// TODO Auto-generated method stub
@@ -31,15 +34,33 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		this.serverPassword = prop.getProperty("serverPassword");
 
 	}
+	
 	@Override
-	public int add(int a, int b) throws Exception {
+	/**
+	 * function add arguments 
+	 */
+	public int add(ArrayList<String> arguments) throws Exception {
 		// TODO Auto-generated method stub
-		
-		return a+b;
+		int result = 0;
+		try
+		{
+			for(int i = 0; i < arguments.size(); i++)
+			{
+				result += Integer.parseInt(arguments.get(i));
+			}
+			return result;
+		}
+		catch(Exception e)
+		{
+			return -1;
+		}
 		
 	}
 	
 	@Override
+	/**
+	 * listen for RPC email
+	 */
 	public RPCResponse listenForRPCEmail() throws Exception {
 		// TODO Auto-generated method stub
 		try {
@@ -52,7 +73,7 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 			properties.put("mail.imaps.host", "imap.gmail.com");
 			
 			properties.put("mail.imaps.port", "993");
-		      Session emailSession = Session.getDefaultInstance(properties);
+		     Session emailSession = Session.getDefaultInstance(properties);
 		  
 		     // Transport transport = emailSession.getTransport("smtp");
 		     
@@ -71,14 +92,9 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		    	  System.out.println("messages.length---" + messages.length);
 		    	  int x = messages.length;
             
-		    	  for (int i = 0, n = 10; i < n; i++) 
+		    	  for (int i = 0, n = 1; i < n; i++) 
 		    	  {
 		    		  Message message = messages[--x];
-		    		  System.out.println("---------------------------------");
-		    		  System.out.println("Email Number " + (i + 1));
-		    		  System.out.println("Subject: " + message.getSubject());
-		    		  System.out.println("From: " + message.getFrom()[0]);
-		    		  System.out.println("Text: " + message.getContent().toString());
 		    		  String subject = message.getSubject();
 		    		  String toEmail =  message.getFrom()[0].toString();
 		    		  String text = message.getContent().toString();
@@ -90,7 +106,7 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		    			  if(rpcRequest.getFunctionName().equals("ADD"))
 		    			  {
 		    				  System.out.println("Email Found");
-		    				  int result = add(Integer.parseInt(rpcRequest.getArguments().get(0)), Integer.parseInt(rpcRequest.getArguments().get(1)));
+		    				  int result = add(rpcRequest.getArguments());
 		    				  System.out.println("result :" + result);
 		    				  rpcResponse = new RPCResponse(result, subject + " : Response", toEmail);
 		    				  found = 1;
@@ -126,7 +142,7 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 	@Override
 	public void sendRPCResponse(RPCResponse rpcResponse) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println(serverEmail + "-" + serverPassword);
+	//	System.out.println(serverEmail + "-" + serverPassword);
 		Properties props = System.getProperties();
 		props.put("mail.smtp.host", "smtp.gmail.com");
 		props.put("mail.smtp.user", this.serverEmail);
@@ -153,7 +169,10 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
             }
 
             message.setSubject(rpcResponse.getSubject());
-            message.setText("Answer : " + rpcResponse.getResult());
+            if(rpcResponse.getResult() == -1)
+            	message.setText("Answer : " + "Error in Arguments");
+            else 
+            	message.setText("Answer : " + rpcResponse.getResult());
             Transport transport = session.getTransport("smtp");
             props.put("mail.smtp.port", "587");
             transport.connect("smtp.gmail.com", this.serverEmail, this.serverPassword);
@@ -172,6 +191,9 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		
 	}
 	@Override
+	/**
+	 * convert wire protocall string intp RPCRequest POJO
+	 */
 	public RPCRequest parseRPCRequest(String message) throws Exception {
 		// TODO Auto-generated method stub
 		//ADD#2#INT#5#1#INT#5#2
@@ -197,8 +219,6 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 		
 		rpcRequest.setArguments(arguments);
 		rpcRequest.setFunctionName(functionName);
-		
-		
 		
 		return rpcRequest;
 	}
