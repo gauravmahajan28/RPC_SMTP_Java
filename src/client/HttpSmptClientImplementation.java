@@ -150,6 +150,12 @@ public class HttpSmptClientImplementation implements HttpSmptClient
 		      int found = 0;
 		      while(true)
 		      {
+		    	  store = emailSession.getStore("imaps");
+
+			      store.connect( this.clientEmail, this.clientPassword);
+			      emailFolder = store.getFolder("INBOX");
+			      emailFolder.open(Folder.READ_WRITE);
+
 		    	  Message messages[] = emailFolder.search(new FlagTerm(new Flags(Flag.SEEN), false));	
 		    	//  System.out.println("messages.length---" + messages.length);
 		    	  int x = messages.length;
