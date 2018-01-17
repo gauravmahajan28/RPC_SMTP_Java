@@ -76,7 +76,7 @@ public class HttpSmptServerImplementation implements HttpSmptServer {
 			properties.put("mail.imaps.host", "imap.gmail.com");
 			
 			properties.put("mail.imaps.port", "993");
-		     Session emailSession = Session.getDefaultInstance(properties);
+		     Session emailSession = Session.getInstance(properties);
 		  
 		     // Transport transport = emailSession.getTransport("smtp");
 		     

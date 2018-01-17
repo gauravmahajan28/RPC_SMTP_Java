@@ -84,7 +84,7 @@ public class HttpSmptClientImplementation implements HttpSmptClient
 	        props.put("mail.smtp.port", "587");
 	        props.put("mail.smtp.auth", "true");
 
-	        Session session = Session.getDefaultInstance(props);
+	        Session session = Session.getInstance(props);
 	        MimeMessage message = new MimeMessage(session);
 
 	        try 

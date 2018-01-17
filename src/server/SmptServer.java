@@ -10,9 +10,13 @@ public class SmptServer {
 		try
 		{
 			HttpSmptServerImplementation httpSmptServerImplementation = new HttpSmptServerImplementation();
-			httpSmptServerImplementation.readProperties();
-			rpcResponse = httpSmptServerImplementation.listenForRPCEmail();
-			httpSmptServerImplementation.sendRPCResponse(rpcResponse);
+			
+			while(true)
+			{
+				httpSmptServerImplementation.readProperties();
+				rpcResponse = httpSmptServerImplementation.listenForRPCEmail();
+				httpSmptServerImplementation.sendRPCResponse(rpcResponse);
+			}
 	
 		}
 		catch(Exception e)
